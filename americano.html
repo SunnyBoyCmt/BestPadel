@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BestPadel Americano System - Fair tournament format where every player plays with every other player. Create balanced matches and track points automatically.">
+    <meta name="keywords" content="americano padel, padel tournament, padel scoring, padel matches, tournament system">
+    <title>Americano System - BestPadel Tournament Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="americano.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><a href="index.html" style="text-decoration: none; color: inherit;">BestPadel</a></h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about" class="nav-link">About Padel</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#growth" class="nav-link">Growth</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#investment" class="nav-link">Investment</a>
+                </li>
+                <li class="nav-item">
+                    <a href="americano.html" class="nav-link active">Americano</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="americano-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Americano System</h1>
+                <p>The fairest tournament format where every player competes with every other player</p>
+                <div class="hero-features">
+                    <div class="feature">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Fair Play</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Point Tracking</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-trophy"></i>
+                        <span>Clear Winner</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournament Setup -->
+    <section class="tournament-setup">
+        <div class="container">
+            <div class="setup-header">
+                <h2>Create Your Tournament</h2>
+                <p>Enter the number of players and courts to generate your Americano tournament</p>
+            </div>
+            
+            <div class="setup-form">
+                <div class="form-group">
+                    <label for="playerCount">Number of Players</label>
+                    <select id="playerCount" class="form-control">
+                        <option value="">Select number of players</option>
+                        <option value="4">4 Players</option>
+                        <option value="6">6 Players</option>
+                        <option value="8">8 Players</option>
+                        <option value="10">10 Players</option>
+                        <option value="12">12 Players</option>
+                        <option value="14">14 Players</option>
+                        <option value="16">16 Players</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courtCount">Number of Courts</label>
+                    <select id="courtCount" class="form-control">
+                        <option value="">Select number of courts</option>
+                        <option value="1">1 Court</option>
+                        <option value="2">2 Courts</option>
+                        <option value="3">3 Courts</option>
+                        <option value="4">4 Courts</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button id="randomizeNames" class="btn btn-secondary">
+                        <i class="fas fa-random"></i>
+                        Randomize Names
+                    </button>
+                    <button id="generateTournament" class="btn btn-primary btn-large">
+                        <i class="fas fa-play"></i>
+                        Generate Tournament
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournament Rules -->
+    <section class="tournament-rules">
+        <div class="container">
+            <h2>How the Americano System Works</h2>
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Round Robin Format</h3>
+                    <p>Every player plays with every other player exactly once, ensuring maximum fairness</p>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Point System</h3>
+                    <p>Players earn points based on their performance in each match. The player with the most points wins</p>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Efficient Scheduling</h3>
+                    <p>Matches are scheduled to use all available courts optimally, minimizing waiting time</p>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h3>Clear Ranking</h3>
+                    <p>Final standings are determined by total points, with tie-breakers for equal scores</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournament Display -->
+    <section id="tournamentDisplay" class="tournament-display" style="display: none;">
+        <div class="container">
+            <div class="tournament-header">
+                <h2>Your Tournament</h2>
+                <div class="tournament-info">
+                    <span id="tournamentPlayers"></span>
+                    <span id="tournamentCourts"></span>
+                    <span id="totalMatches"></span>
+                </div>
+            </div>
+            
+            <!-- Current Round -->
+            <div class="current-round">
+                <div class="round-header">
+                    <h3 id="roundTitle">Round 1</h3>
+                    <div class="round-info">
+                        <span id="roundProgress">Match 1 of 7</span>
+                    </div>
+                </div>
+                
+                <!-- Current Matches -->
+                <div id="currentMatches" class="matches-container">
+                    <!-- Current matches will be generated here -->
+                </div>
+                
+                <!-- Round Actions -->
+                <div class="round-actions">
+                    <button id="confirmRound" class="btn btn-primary btn-large" disabled>
+                        <i class="fas fa-check"></i>
+                        Confirm Round & Continue
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tournament Controls -->
+            <div class="tournament-controls">
+                <button id="toggleLeaderboard" class="btn btn-secondary">
+                    <i class="fas fa-trophy"></i>
+                    View Leaderboard
+                </button>
+            </div>
+            
+            <!-- Leaderboard -->
+            <div class="leaderboard" id="leaderboardSection" style="display: none;">
+                <h3>Leaderboard</h3>
+                <div id="leaderboardContainer" class="leaderboard-container">
+                    <!-- Leaderboard will be generated here -->
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Tournament History -->
+    <section class="tournament-history">
+        <div class="container">
+            <h2>Tournament History</h2>
+            <div id="historyContainer" class="history-container">
+                <div class="no-history">
+                    <i class="fas fa-history"></i>
+                    <p>No tournaments completed yet. Create your first tournament above!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BestPadel</h3>
+                    <p>Professional padel tournaments and facilities</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#about">About Padel</a></li>
+                        <li><a href="americano.html">Americano</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p><i class="fas fa-envelope"></i> info@bestpadel.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Coming to a city near you</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BestPadel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="americano.js"></script>
+</body>
+</html>
