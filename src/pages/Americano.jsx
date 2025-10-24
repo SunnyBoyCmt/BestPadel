@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Americano.css'
 
 const Americano = () => {
@@ -14,6 +14,44 @@ const Americano = () => {
     'Gray', 'Harper', 'Ivy', 'Jordan', 'Kai', 'Lane',
     'Morgan', 'Nova', 'Ocean', 'Parker'
   ]
+
+  // Load tournament from localStorage on component mount
+  useEffect(() => {
+    const savedTournament = localStorage.getItem('bestpadel-tournament')
+    if (savedTournament) {
+      try {
+        const parsedTournament = JSON.parse(savedTournament)
+        // Validate tournament structure
+        if (parsedTournament.players && parsedTournament.rounds && parsedTournament.currentRound) {
+          setTournament(parsedTournament)
+          setCurrentRound(parsedTournament.currentRound || 1)
+          console.log('Tournament restored from localStorage')
+        } else {
+          console.warn('Invalid tournament data in localStorage, clearing...')
+          localStorage.removeItem('bestpadel-tournament')
+        }
+      } catch (error) {
+        console.error('Error loading tournament from localStorage:', error)
+        localStorage.removeItem('bestpadel-tournament')
+      }
+    }
+  }, [])
+
+  // Save tournament to localStorage whenever it changes
+  useEffect(() => {
+    if (tournament) {
+      try {
+        const tournamentToSave = {
+          ...tournament,
+          lastSaved: new Date().toISOString()
+        }
+        localStorage.setItem('bestpadel-tournament', JSON.stringify(tournamentToSave))
+        console.log('Tournament saved to localStorage')
+      } catch (error) {
+        console.error('Error saving tournament to localStorage:', error)
+      }
+    }
+  }, [tournament])
 
   const generateTournament = () => {
     if (!playerCount || !courtCount) {
@@ -39,68 +77,141 @@ const Americano = () => {
 
     const courts = Array.from({ length: parseInt(courtCount) }, (_, i) => `Court ${i + 1}`)
     
-    // Generate matches (7 rounds for 8 players)
-    const totalRounds = parseInt(playerCount) - 1
-    const matches = []
-    
-    for (let round = 1; round <= totalRounds; round++) {
-      const roundMatches = generateRoundMatches(round, players, courts)
-      matches.push(...roundMatches)
-    }
+    // Generate rounds with unique partnerships
+    const rounds = generateTournamentRounds(players, courts)
+    const totalRounds = rounds.length
 
     setTournament({
       players,
       courts,
-      matches,
+      rounds,
       totalRounds,
-      currentRound: 1
+      currentRound: 1,
+      completedRounds: 0
     })
     setShowNameModal(false)
   }
 
-  const generateRoundMatches = (round, players, courts) => {
-    const matches = []
-    const shuffledPlayers = [...players]
+  const generateTournamentRounds = (players, courts) => {
+    const rounds = []
+    const playerCount = players.length
+    const usedPartnerships = new Set()
     
-    // Simple rotation for each round
-    for (let i = 0; i < round - 1; i++) {
-      const first = shuffledPlayers.shift()
-      shuffledPlayers.push(first)
+    // For Americano format, we need (n-1) rounds where n is number of players
+    const totalRounds = playerCount - 1
+    
+    for (let round = 1; round <= totalRounds; round++) {
+      const roundMatches = generateRoundMatches(players, courts, round, usedPartnerships)
+      rounds.push({
+        roundNumber: round,
+        matches: roundMatches
+      })
     }
+    
+    return rounds
+  }
 
-    // Create teams of 2
-    const teams = []
-    for (let i = 0; i < shuffledPlayers.length; i += 2) {
-      if (i + 1 < shuffledPlayers.length) {
-        teams.push({
-          id: teams.length + 1,
-          players: [shuffledPlayers[i], shuffledPlayers[i + 1]],
-          score: 0
-        })
+  const generateRoundMatches = (players, courts, roundNumber, usedPartnerships) => {
+    const availablePlayers = [...players]
+    const matches = []
+    const roundPartnerships = new Set()
+    
+    // Create partnerships for this round ensuring no duplicates
+    while (availablePlayers.length >= 2) {
+      // Find a valid partnership that hasn't been used before
+      let team1 = null
+      let team2 = null
+      
+      for (let i = 0; i < availablePlayers.length; i++) {
+        for (let j = i + 1; j < availablePlayers.length; j++) {
+          const player1 = availablePlayers[i]
+          const player2 = availablePlayers[j]
+          const partnership = `${Math.min(player1.id, player2.id)}-${Math.max(player1.id, player2.id)}`
+          
+          if (!usedPartnerships.has(partnership) && !roundPartnerships.has(partnership)) {
+            team1 = [player1, player2]
+            usedPartnerships.add(partnership)
+            roundPartnerships.add(partnership)
+            break
+          }
+        }
+        if (team1) break
       }
-    }
-
-    // Create matches (2v2)
-    for (let i = 0; i < teams.length; i += 2) {
-      if (i + 1 < teams.length) {
-        matches.push({
-          id: `${round}-${Math.floor(i/2) + 1}`,
-          round,
-          matchNumber: Math.floor(i/2) + 1,
-          court: courts[Math.floor(i/2) % courts.length],
-          teams: [teams[i], teams[i + 1]],
-          status: 'pending',
-          completed: false
-        })
+      
+      if (!team1) {
+        // If no valid partnership found, create one anyway (fallback)
+        team1 = [availablePlayers[0], availablePlayers[1]]
+        const partnership = `${Math.min(team1[0].id, team1[1].id)}-${Math.max(team1[0].id, team1[1].id)}`
+        usedPartnerships.add(partnership)
+        roundPartnerships.add(partnership)
       }
+      
+      // Remove selected players from available list
+      availablePlayers.splice(availablePlayers.indexOf(team1[0]), 1)
+      availablePlayers.splice(availablePlayers.indexOf(team1[1]), 1)
+      
+      // Find second team
+      if (availablePlayers.length >= 2) {
+        for (let i = 0; i < availablePlayers.length; i++) {
+          for (let j = i + 1; j < availablePlayers.length; j++) {
+            const player1 = availablePlayers[i]
+            const player2 = availablePlayers[j]
+            const partnership = `${Math.min(player1.id, player2.id)}-${Math.max(player1.id, player2.id)}`
+            
+            if (!usedPartnerships.has(partnership) && !roundPartnerships.has(partnership)) {
+              team2 = [player1, player2]
+              usedPartnerships.add(partnership)
+              roundPartnerships.add(partnership)
+              break
+            }
+          }
+          if (team2) break
+        }
+        
+        if (!team2) {
+          // Fallback for second team
+          team2 = [availablePlayers[0], availablePlayers[1]]
+          const partnership = `${Math.min(team2[0].id, team2[1].id)}-${Math.max(team2[0].id, team2[1].id)}`
+          usedPartnerships.add(partnership)
+          roundPartnerships.add(partnership)
+        }
+        
+        // Remove second team from available list
+        availablePlayers.splice(availablePlayers.indexOf(team2[0]), 1)
+        availablePlayers.splice(availablePlayers.indexOf(team2[1]), 1)
+      }
+      
+      // Create match
+      const courtIndex = matches.length % courts.length
+      matches.push({
+        id: `round-${roundNumber}-match-${matches.length + 1}`,
+        round: roundNumber,
+        matchNumber: matches.length + 1,
+        court: courts[courtIndex],
+        teams: [
+          {
+            id: `round-${roundNumber}-team-1`,
+            players: team1,
+            score: 0
+          },
+          {
+            id: `round-${roundNumber}-team-2`,
+            players: team2,
+            score: 0
+          }
+        ],
+        status: 'pending',
+        completed: false
+      })
     }
-
+    
     return matches
   }
 
   const getCurrentRoundMatches = () => {
     if (!tournament) return []
-    return tournament.matches.filter(match => match.round === currentRound)
+    const currentRoundData = tournament.rounds.find(round => round.roundNumber === currentRound)
+    return currentRoundData ? currentRoundData.matches : []
   }
 
   const confirmRound = () => {
@@ -162,9 +273,31 @@ const Americano = () => {
       match.completed = true
     })
 
+    // Update tournament state with completed round
+    const updatedTournament = {
+      ...tournament,
+      currentRound: currentRound + 1,
+      completedRounds: tournament.completedRounds + 1
+    }
+    
+    // Save to localStorage immediately
+    try {
+      const tournamentToSave = {
+        ...updatedTournament,
+        lastSaved: new Date().toISOString()
+      }
+      localStorage.setItem('bestpadel-tournament', JSON.stringify(tournamentToSave))
+      console.log('Round completed and saved to localStorage')
+    } catch (error) {
+      console.error('Error saving tournament after round completion:', error)
+    }
+    
+    setTournament(updatedTournament)
+
     // Check if tournament is complete
     if (currentRound >= tournament.totalRounds) {
-      alert('Tournament Complete!')
+      // Tournament complete - show final leaderboard
+      console.log('Tournament completed!')
       return
     }
 
@@ -175,6 +308,7 @@ const Americano = () => {
     setTournament(null)
     setCurrentRound(1)
     setPlayerNames([])
+    localStorage.removeItem('bestpadel-tournament')
   }
 
   if (showNameModal) {
@@ -220,91 +354,102 @@ const Americano = () => {
 
   if (tournament) {
     const currentMatches = getCurrentRoundMatches()
+    const isTournamentComplete = currentRound > tournament.totalRounds
+    const completedMatches = tournament.rounds.reduce((total, round) => 
+      total + round.matches.filter(match => match.completed).length, 0)
+    const totalMatches = tournament.rounds.reduce((total, round) => 
+      total + round.matches.length, 0)
     
     return (
       <div className="americano-page">
         <div className="americano-hero">
           <div className="container">
             <h1>Americano Tournament</h1>
-            <p>Round {currentRound} of {tournament.totalRounds}</p>
+            {isTournamentComplete ? (
+              <p>Tournament Complete! 🏆</p>
+            ) : (
+              <p>Round {currentRound} of {tournament.totalRounds} • {completedMatches}/{totalMatches} matches completed</p>
+            )}
           </div>
         </div>
         
         <div className="americano-content">
           <div className="container">
             <div className="tournament-display">
-              <div className="current-round">
-                <div className="round-header">
-                  <h3>Round {currentRound}</h3>
-                  <div className="round-info">
-                    <span>{tournament.players.length} Players • {tournament.courts.length} Courts</span>
+              {!isTournamentComplete && (
+                <div className="current-round">
+                  <div className="round-header">
+                    <h3>Round {currentRound}</h3>
+                    <div className="round-info">
+                      <span>{tournament.players.length} Players • {tournament.courts.length} Courts</span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="matches-container">
-                  {currentMatches.map((match, index) => (
-                    <div key={match.id} className="match-block">
-                      <div className="match-header">
-                        <h4>{match.court}</h4>
-                      </div>
-                      <div className="padel-match">
-                        <div className="team-vs-team">
-                          <div className="team-block">
-                            <div className="team-players">
-                              <div className="team-label">
-                                {match.teams[0].players[0].name} & {match.teams[0].players[1].name}
+                  
+                  <div className="matches-container">
+                    {currentMatches.map((match, index) => (
+                      <div key={match.id} className="match-block">
+                        <div className="match-header">
+                          <h4>{match.court}</h4>
+                        </div>
+                        <div className="padel-match">
+                          <div className="team-vs-team">
+                            <div className="team-block">
+                              <div className="team-players">
+                                <div className="team-label">
+                                  {match.teams[0].players[0].name} & {match.teams[0].players[1].name}
+                                </div>
+                              </div>
+                              <div className="score-input">
+                                <label>Score:</label>
+                                <input
+                                  type="number"
+                                  className="score-field"
+                                  data-match-id={match.id}
+                                  data-team-id={match.teams[0].id}
+                                  defaultValue={match.teams[0].score || 0}
+                                  min="0"
+                                  max="20"
+                                  placeholder="0-20"
+                                />
                               </div>
                             </div>
-                            <div className="score-input">
-                              <label>Score:</label>
-                              <input
-                                type="number"
-                                className="score-field"
-                                data-match-id={match.id}
-                                data-team-id={match.teams[0].id}
-                                defaultValue={match.teams[0].score || 0}
-                                min="0"
-                                max="20"
-                                placeholder="0-20"
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="vs-divider">VS</div>
-                          
-                          <div className="team-block">
-                            <div className="team-players">
-                              <div className="team-label">
-                                {match.teams[1].players[0].name} & {match.teams[1].players[1].name}
+                            
+                            <div className="vs-divider">VS</div>
+                            
+                            <div className="team-block">
+                              <div className="team-players">
+                                <div className="team-label">
+                                  {match.teams[1].players[0].name} & {match.teams[1].players[1].name}
+                                </div>
                               </div>
-                            </div>
-                            <div className="score-input">
-                              <label>Score:</label>
-                              <input
-                                type="number"
-                                className="score-field"
-                                data-match-id={match.id}
-                                data-team-id={match.teams[1].id}
-                                defaultValue={match.teams[1].score || 0}
-                                min="0"
-                                max="20"
-                                placeholder="0-20"
-                              />
+                              <div className="score-input">
+                                <label>Score:</label>
+                                <input
+                                  type="number"
+                                  className="score-field"
+                                  data-match-id={match.id}
+                                  data-team-id={match.teams[1].id}
+                                  defaultValue={match.teams[1].score || 0}
+                                  min="0"
+                                  max="20"
+                                  placeholder="0-20"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  
+                  <div className="round-actions">
+                    <button onClick={confirmRound} className="btn btn-primary btn-large">
+                      <span>✓</span>
+                      Confirm Round & Continue
+                    </button>
+                  </div>
                 </div>
-                
-                <div className="round-actions">
-                  <button onClick={confirmRound} className="btn btn-primary btn-large">
-                    <span>✓</span>
-                    Confirm Round & Continue
-                  </button>
-                </div>
-              </div>
+              )}
               
               <div className="tournament-controls">
                 <button onClick={resetTournament} className="btn btn-secondary">

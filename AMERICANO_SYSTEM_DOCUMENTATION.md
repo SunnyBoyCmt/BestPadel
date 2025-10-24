@@ -8,7 +8,7 @@ The Americano system is a Padel tournament format where every player partners wi
 ### Basic Rules
 1. **8 Players = 7 Rounds**: Each player partners with 7 different players (8-1 = 7)
 2. **2v2 Matches**: Each match is 2 players vs 2 players
-3. **40 Points Per Match**: Each match must total exactly 40 points (20 per team)
+3. **40 Points Per Match**: Each match must total exactly 40 points (20 penpr team)
 4. **Point Accumulation**: Both players in each team get the same points
 
 ### Tournament Structure
